@@ -489,10 +489,6 @@ function renderBars(){
 }
 function updateDomain(v){activeDomainKey=v;refreshChartSub();renderCountyCards();renderBars();}
 function updateWindow(v){const m={fall26:'Fall 2026',spring26:'Spring 2026',fall25:'Fall 2025'};window._currentWindow=m[v];refreshChartSub();}
-function refreshChartSub(){
-  document.getElementById('chartSub').textContent=
-    `% of enrolled students assessed \u00b7 ${DOMAIN_LABELS[activeDomainKey]} \u00b7 ${window._currentWindow}`;
-}
 
 /* =====================================================================
    GROWTH TAB DATA
