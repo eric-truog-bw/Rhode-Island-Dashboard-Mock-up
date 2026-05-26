@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>RI Pre-K Assessment System – Implementation Work Plan</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f7fa; color: #1a1a2e; padding: 24px; }
+  h1 { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .subtitle { font-size: 12px; color: #555; margin-bottom: 20px; }
+  .container { background: #fff; border-radius: 10px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); overflow: hidden; }
+
+  .legend { display: flex; gap: 20px; flex-wrap: wrap; padding: 14px 20px; border-bottom: 1px solid #eee; background: #fafbfc; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: #444; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0; }
+
+  .gantt-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+  .gantt-table th {
+    background: #1a1a2e; color: #fff; font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.04em; padding: 8px 6px;
+    text-align: left; border-right: 1px solid #2d2d4e;
+  }
+  .gantt-table th.month-col { text-align: center; }
+  .gantt-table th.owner-sub { background: #2d3561; font-size: 9px; text-transform: none; letter-spacing: 0; padding: 4px 6px; }
+
+  .col-phase    { width: 100px; }
+  .col-activity { width: 175px; }
+  .col-bw       { width: 120px; }
+  .col-ri       { width: 110px; }
+  .col-milestone{ width: 150px; }
+  .col-month    { width: 46px; }
+
+  .gantt-table td {
+    padding: 7px 8px; font-size: 11px; vertical-align: top;
+    border-bottom: 1px solid #eef0f3; border-right: 1px solid #eef0f3;
+  }
+
+  .phase-header td {
+    background: #f0f2f8; font-weight: 700; font-size: 11px;
+    color: #1a1a2e; padding: 8px 8px; border-bottom: 1px solid #d0d4e8;
+  }
+
+  .activity-name { font-weight: 600; color: #1a1a2e; margin-bottom: 2px; }
+  .activity-sub  { color: #666; font-size: 10.5px; line-height: 1.4; }
+
+  /* brightwheel chips: navy */
+  .chip-bw {
+    display: inline-block; background: #dbeafe; color: #1e3a8a;
+    border-radius: 4px; padding: 2px 5px; font-size: 9.5px;
+    font-weight: 600; margin: 1px 1px 1px 0; white-space: nowrap;
+  }
+  /* RI stakeholder chips: green */
+  .chip-ri {
+    display: inline-block; background: #dcfce7; color: #14532d;
+    border-radius: 4px; padding: 2px 5px; font-size: 9.5px;
+    font-weight: 600; margin: 1px 1px 1px 0; white-space: nowrap;
+  }
+
+  .milestone-text { font-size: 10.5px; color: #333; line-height: 1.4; }
+  .milestone-star { color: #f59e0b; margin-right: 2px; }
+
+  .month-cell { text-align: center; padding: 6px 3px; }
+  .bar { display: block; height: 14px; border-radius: 3px; margin: 0 auto; width: 88%; }
+  .diamond { display: inline-block; width: 11px; height: 11px; background: #f59e0b; transform: rotate(45deg); border-radius: 2px; margin-top: 2px; }
+
+  .c-blue   { background: #3b6fd4; }
+  .c-teal   { background: #0ea5a0; }
+  .c-green  { background: #22a86b; }
+  .c-purple { background: #7c5cbf; }
+  .c-orange { background: #e07a1f; }
+  .c-gray   { background: #94a3b8; }
+
+  .stripe-odd td { background: #fafbfc; }
+
+  /* owner column divider */
+  .col-bw-cell { border-left: 2px solid #e2e8f0; }
+  .col-ri-cell { border-right: 2px solid #e2e8f0; }
+
+  .phase-label { font-size: 10px; font-weight: 700; color: #1a1a2e; line-height: 1.3; }
+  .phase-tag { display: inline-block; padding: 2px 5px; border-radius: 3px; font-size: 9px; font-weight: 700; margin-top: 3px; }
+  .tag-1 { background: #dbeafe; color: #1d4ed8; }
+  .tag-2 { background: #d1fae5; color: #065f46; }
+  .tag-3 { background: #fef3c7; color: #92400e; }
+  .tag-4 { background: #ede9fe; color: #5b21b6; }
+
+  .notes-section { padding: 16px 20px; border-top: 1px solid #eee; background: #fafbfc; }
+  .notes-section h3 { font-size: 12px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px; }
+  .notes-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .note-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 6px; padding: 10px; }
+  .note-card h4 { font-size: 10px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .note-card ul { padding-left: 12px; }
+  .note-card li { font-size: 10px; color: #444; line-height: 1.5; }
+
+  .owner-header-group th { border-bottom: 1px solid #3d4a7a; }
+</style>
+</head>
+<body>
+
+<h1>DSSV, Inc. (dba brightwheel) — RI Pre-K Assessment System</h1>
+<p class="subtitle">Implementation Work Plan &amp; Gantt Chart &nbsp;|&nbsp; RFP26006576 &nbsp;|&nbsp; Contract Start: Summer 2026 (3-year initial term)</p>
+
+<div class="container">
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot c-blue"></div> Phase 1: Discovery &amp; Setup</div>
+    <div class="legend-item"><div class="legend-dot c-teal"></div> Phase 2: Training &amp; Pre-Launch</div>
+    <div class="legend-item"><div class="legend-dot c-green"></div> Phase 3: Statewide Launch</div>
+    <div class="legend-item"><div class="legend-dot c-purple"></div> Phase 4: Ongoing Ops &amp; QA</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#f59e0b;transform:rotate(45deg);border-radius:2px;width:10px;height:10px;margin-top:1px;"></div> Key Milestone</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#dbeafe;border:1px solid #1e3a8a;"></div> brightwheel Owner</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#dcfce7;border:1px solid #14532d;"></div> RI Stakeholder (consult)</div>
+  </div>
+
+  <table class="gantt-table">
+    <thead>
+      <!-- Row 1: main headers -->
+      <tr>
+        <th class="col-phase" rowspan="2">Phase</th>
+        <th class="col-activity" rowspan="2">Activity &amp; Key Deliverables</th>
+        <th class="col-bw" style="background:#1e3a8a;">brightwheel<br><span style="font-weight:400;font-size:9px;text-transform:none;">Owner / Lead</span></th>
+        <th class="col-ri" style="background:#14532d;">RIDE / RI Stakeholder<br><span style="font-weight:400;font-size:9px;text-transform:none;">Consult / Approve</span></th>
+        <th class="col-milestone" rowspan="2">Milestone / QA Gate</th>
+        <th class="col-month month-col" rowspan="2">Jun<br><span style="font-size:8px;font-weight:400;">'26</span></th>
+        <th class="col-month month-col" rowspan="2">Jul</th>
+        <th class="col-month month-col" rowspan="2">Aug</th>
+        <th class="col-month month-col" rowspan="2">Sep</th>
+        <th class="col-month month-col" rowspan="2">Oct</th>
+        <th class="col-month month-col" rowspan="2">Nov</th>
+        <th class="col-month month-col" rowspan="2">Dec</th>
+        <th class="col-month month-col" rowspan="2">Jan<br><span style="font-size:8px;font-weight:400;">'27</span></th>
+        <th class="col-month month-col" rowspan="2">Feb</th>
+        <th class="col-month month-col" rowspan="2">Mar</th>
+        <th class="col-month month-col" rowspan="2">Apr</th>
+        <th class="col-month month-col" rowspan="2">May</th>
+        <th class="col-month month-col" rowspan="2">Jun+</th>
+      </tr>
+      <tr><!-- empty: rowspan fills phase + activity + milestone + months --></tr>
+    </thead>
+    <tbody>
+
+      <!-- ===== PHASE 1 ===== -->
+      <tr class="phase-header">
+        <td colspan="18">PHASE 1 — Discovery, Data Alignment &amp; Account Setup &nbsp;<span style="font-weight:400;font-size:10px;color:#555">(June 2026)</span></td>
+      </tr>
+
+      <tr>
+        <td rowspan="4"><div class="phase-label">Discovery &amp; Setup</div><span class="phase-tag tag-1">Phase 1</span></td>
+        <td><div class="activity-name">Project Kickoff &amp; Charter</div><div class="activity-sub">Joint kickoff with RIDE; finalize KPIs, success metrics, roles, escalation paths; produce signed charter</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">State Partnerships Lead</span><span class="chip-bw">Eric Truog (exec sponsor)</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE Program Director</span></td>
+        <td><span class="milestone-star">★</span><span class="milestone-text">Signed project charter; KPI dashboard live</span></td>
+        <td class="month-cell"><span class="bar c-blue"></span></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+
+      <tr class="stripe-odd">
+        <td><div class="activity-name">RISES / Salesforce Integration Design</div><div class="activity-sub">Define data fields, matching protocols, exchange format (flat file or API); deliver data mapping schema and crosswalk</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">Engineering</span><span class="chip-bw">State Partnerships Lead</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE IT Team</span></td>
+        <td><span class="milestone-text">Data mapping schema approved by RIDE IT</span></td>
+        <td class="month-cell"><span class="bar c-blue"></span></td>
+        <td class="month-cell"><span class="bar c-blue"></span></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+
+      <tr>
+        <td><div class="activity-name">Account Provisioning &amp; Rostering</div><div class="activity-sub">Mass-create accounts for all 150 classrooms; bulk upload student rosters, staff, and family accounts; assign onboarding coaches per program</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">Onboarding Coaches</span><span class="chip-bw">Roster Specialists</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE (provides roster data)</span></td>
+        <td><span class="milestone-star">★</span><span class="milestone-text">100% of classrooms active and verified before training begins</span></td>
+        <td></td>
+        <td class="month-cell"><span class="bar c-blue"></span></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+
+      <tr class="stripe-odd">
+        <td><div class="activity-name">Summative Assessment Configuration</div><div class="activity-sub">Configure Fall/Spring windows; align to RI ELDS and K-3 Core Standards; build RIDE-facing compliance monitoring view; separate RI Pre-K data from other LEA purchasers</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">Product</span><span class="chip-bw">Assessment Team</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE Curriculum / Assessment</span></td>
+        <td><span class="milestone-text">RIDE confirms standards alignment and UAT sign-off on monitoring view</span></td>
+        <td class="month-cell"><span class="bar c-blue"></span></td>
+        <td class="month-cell"><span class="bar c-blue"></span></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+
+      <!-- ===== PHASE 2 ===== -->
+      <tr class="phase-header">
+        <td colspan="18">PHASE 2 — Professional Development &amp; Pre-Launch Training &nbsp;<span style="font-weight:400;font-size:10px;color:#555">(July – August 2026) &nbsp;|&nbsp; All training complete before 9/1 per RFP</span></td>
+      </tr>
+
+      <tr>
+        <td rowspan="4"><div class="phase-label">Training &amp; Pre-Launch</div><span class="phase-tag tag-2">Phase 2</span></td>
+        <td><div class="activity-name">Asynchronous Pre-Training Module</div><div class="activity-sub">1-hr on-demand module for all educators: platform nav, formative observation logging, summative administration, reporting basics</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">EEL Training Team</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE (monitors completion)</span></td>
+        <td><span class="milestone-text">≥90% module completion before live sessions begin</span></td>
+        <td></td>
+        <td class="month-cell"><span class="bar c-teal"></span></td>
+        <td class="month-cell"><span class="bar c-teal"></span></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+
+      <tr class="stripe-odd">
+        <td><div class="activity-name">Live In-Person Regional PD Sessions</div><div class="activity-sub">Multi-site sessions across RI; role-specific tracks for educators, admins, coaches; bilingual EN/ES; covers both formative and summative workflows; ~3 PD days per RFP</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">EEL Training Team</span><span class="chip-bw">State Partnerships Lead</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE (site logistics)</span><span class="chip-ri">Program Admins</span></td>
+        <td><span class="milestone-star">★</span><span class="milestone-text">100% of target participants trained; attendance records + certs delivered to RIDE by 8/15</span></td>
+        <td></td>
+        <td class="month-cell"><span class="bar c-teal"></span></td>
+        <td class="month-cell"><span class="bar c-teal"></span></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+
+      <tr>
+        <td><div class="activity-name">RIDE State Staff Training</div><div class="activity-sub">Dedicated session: state-level monitoring dashboard, RISES data validation, compliance reporting, summative window management</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">State Partnerships Lead</span><span class="chip-bw">Analytics</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE Program + IT Staff</span></td>
+        <td><span class="milestone-text">RIDE staff can independently run state reports and monitor compliance</span></td>
+        <td></td>
+        <td class="month-cell"><span class="bar c-teal"></span></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+
+      <tr class="stripe-odd">
+        <td><div class="activity-name">RISES Integration Testing &amp; Validation</div><div class="activity-sub">Test data exchange between brightwheel and RISES; validate field mapping, match accuracy, and year-over-year child outcome data flow</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">Engineering</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE IT Team</span></td>
+        <td><span class="milestone-star">★</span><span class="milestone-text">RIDE IT sign-off; successful test transfer complete before school year start</span></td>
+        <td></td>
+        <td class="month-cell"><span class="bar c-teal"></span></td>
+        <td class="month-cell"><span class="bar c-teal"></span></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+
+      <!-- ===== PHASE 3 ===== -->
+      <tr class="phase-header">
+        <td colspan="18">PHASE 3 — Statewide Launch: Fall Summative Window + Formative Rollout &nbsp;<span style="font-weight:400;font-size:10px;color:#555">(September – November 2026)</span></td>
+      </tr>
+
+      <tr>
+        <td rowspan="3"><div class="phase-label">Statewide Launch</div><span class="phase-tag tag-3">Phase 3</span></td>
+        <td><div class="activity-name">Fall Summative Assessment Window</div><div class="activity-sub">Programs administer pre-assessment (fall baseline); RIDE dashboard shows real-time compliance; brightwheel monitors completion by program</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">Onboarding Coaches</span><span class="chip-bw">CS / Help Desk</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE (compliance oversight)</span><span class="chip-ri">Program Educators</span></td>
+        <td><span class="milestone-star">★</span><span class="milestone-text">≥95% of enrolled students with fall baseline recorded; RIDE compliance view live</span></td>
+        <td></td><td></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+
+      <tr class="stripe-odd">
+        <td><div class="activity-name">Formative Assessment: Ongoing Observation Cycle</div><div class="activity-sub">Educators log observations continuously via mobile/web; birth–Grade 3 continuum active; RIDE remotely monitors compliance; family sharing enabled in EN and ES</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">CS / Help Desk</span><span class="chip-bw">State Partnerships Lead</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">Program Educators</span><span class="chip-ri">RIDE (remote monitoring)</span></td>
+        <td><span class="milestone-text">First observation data visible in RIDE monitoring view within week 1 of school year</span></td>
+        <td></td><td></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+      </tr>
+
+      <tr>
+        <td><div class="activity-name">Early Adoption Monitoring (First 90 Days)</div><div class="activity-sub">Weekly RIDE check-ins; brightwheel tracks login frequency, observation rates, data quality; proactive outreach to lagging programs</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">State Partnerships Lead</span><span class="chip-bw">Onboarding Coaches</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE Program Director</span></td>
+        <td><span class="milestone-text">90-day adoption report delivered to RIDE with remediation plan for any gaps</span></td>
+        <td></td><td></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td class="month-cell"><span class="bar c-green"></span></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+
+
+
+      <!-- ===== PHASE 4 ===== -->
+      <tr class="phase-header">
+        <td colspan="18">PHASE 4 — Ongoing Operations, Spring Summative &amp; Continuous Improvement &nbsp;<span style="font-weight:400;font-size:10px;color:#555">(January 2027 onward, recurring annually)</span></td>
+      </tr>
+
+      <tr>
+        <td rowspan="5"><div class="phase-label">Ongoing Ops &amp; QA</div><span class="phase-tag tag-4">Phase 4</span></td>
+        <td><div class="activity-name">Spring Summative Assessment Window</div><div class="activity-sub">Post-assessment administered; pre/post growth reports generated at child, program, and state levels; federal compliance data packaged for RIDE</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">Analytics</span><span class="chip-bw">CS / Help Desk</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE (compliance + federal reporting)</span><span class="chip-ri">Program Educators</span></td>
+        <td><span class="milestone-star">★</span><span class="milestone-text">Pre/post growth reports delivered; RISES annual transfer complete by May 31</span></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td></td>
+      </tr>
+
+      <tr class="stripe-odd">
+        <td><div class="activity-name">Quarterly Business Reviews (QBRs)</div><div class="activity-sub">Structured reviews against agreed KPIs: adoption rates, observation compliance, summative completion, child outcome trends; action items assigned with owners</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">State Partnerships Lead</span><span class="chip-bw">Eric Truog</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE Program Director</span></td>
+        <td><span class="milestone-text">Written QBR summary delivered within 5 business days of each meeting</span></td>
+        <td></td><td></td><td></td>
+        <td class="month-cell"><div class="diamond"></div></td>
+        <td></td><td></td>
+        <td class="month-cell"><div class="diamond"></div></td>
+        <td></td><td></td>
+        <td class="month-cell"><div class="diamond"></div></td>
+        <td></td>
+        <td class="month-cell"><div class="diamond"></div></td>
+        <td></td>
+      </tr>
+
+      <tr>
+        <td><div class="activity-name">On-Demand PD &amp; Mid-Year Staff Onboarding</div><div class="activity-sub">Brightwheel PD platform open year-round for new hires and refreshers; virtual advanced sessions quarterly; certificates auto-tracked in staff profiles</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">EEL Training Team</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">Program Admins</span></td>
+        <td><span class="milestone-text">PD completion rates reported at each QBR</span></td>
+        <td></td><td></td><td></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+        <td class="month-cell"><span class="bar c-purple"></span></td>
+      </tr>
+
+      <tr class="stripe-odd">
+        <td><div class="activity-name">Technical Support &amp; Help Desk (Ongoing)</div><div class="activity-sub">75+ CS professionals; bilingual EN/ES; live chat &lt;1 min / email &lt;2 hrs; dedicated ri@ inbox; 3-tier escalation; 99.9% uptime SLA monitored 24/7</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">CS / Help Desk</span><span class="chip-bw">Engineering (escalations)</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">Program Staff (end users)</span></td>
+        <td><span class="milestone-text">CSAT ≥90%; uptime ≥99.9% reported at each QBR</span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+        <td class="month-cell"><span class="bar c-gray"></span></td>
+      </tr>
+
+      <tr>
+        <td><div class="activity-name">Annual Renewal: Year 2+ Pre-Launch Cycle</div><div class="activity-sub">Roster updates for new cohort; Year 2 pre-service training (incorporating Year 1 feedback); RISES annual data transfer; platform enhancements deployed</div></td>
+        <td class="col-bw-cell"><span class="chip-bw">Onboarding Coaches</span><span class="chip-bw">EEL Training Team</span></td>
+        <td class="col-ri-cell"><span class="chip-ri">RIDE Program Director</span></td>
+        <td><span class="milestone-star">★</span><span class="milestone-text">Year 2 training complete before 9/1; rosters updated; Year 1 outcome data in RISES</span></td>
+        <td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td>
+        <td class="month-cell"><span class="bar c-orange"></span></td>
+      </tr>
+
+    </tbody>
+  </table>
+
+  <div class="notes-section">
+    <h3>Staffing Roles, QA Processes &amp; Key Assumptions</h3>
+    <div class="notes-grid">
+      <div class="note-card">
+        <h4>brightwheel Staffing</h4>
+        <ul>
+          <li>State Partnerships Lead (primary RIDE liaison)</li>
+          <li>Eric Truog, GM Gov Ed (exec sponsor)</li>
+          <li>Dedicated Onboarding Coaches (per program)</li>
+          <li>Roster Upload Specialists</li>
+          <li>EEL Training Team (in-person + virtual)</li>
+          <li>Engineering (RISES integration)</li>
+          <li>Analytics (state reporting)</li>
+          <li>75+ CS / Help Desk professionals</li>
+        </ul>
+      </div>
+      <div class="note-card">
+        <h4>RIDE / RI Stakeholders</h4>
+        <ul>
+          <li>RIDE Program Director (primary contact)</li>
+          <li>RIDE IT Team (RISES/Salesforce integration)</li>
+          <li>RIDE Curriculum/Assessment staff (standards alignment)</li>
+          <li>Program Administrators (site-level logistics)</li>
+          <li>Program Educators (end users)</li>
+        </ul>
+      </div>
+      <div class="note-card">
+        <h4>QA Gates</h4>
+        <ul>
+          <li>Signed project charter before any build begins</li>
+          <li>RIDE UAT sign-off on standards alignment</li>
+          <li>RIDE IT sign-off on RISES test transfer</li>
+          <li>≥90% pre-training completion before live PD</li>
+          <li>90-day adoption report with remediation plan</li>
+          <li>Quarterly KPI reviews against agreed targets</li>
+          <li>Annual provider satisfaction survey</li>
+          <li>Annual third-party pen testing</li>
+        </ul>
+      </div>
+      <div class="note-card">
+        <h4>Key Assumptions</h4>
+        <ul>
+          <li>Contract executed by June 2026</li>
+          <li>RIDE provides roster data by mid-June</li>
+          <li>RIDE IT available for RISES work June–July</li>
+          <li>In-person PD sites available across RI</li>
+          <li>Spanish interpretation arranged as needed</li>
+          <li>Year 1: 150 classrooms, ~2,840 students; growing annually</li>
+          <li>RI Pre-K data isolated from other LEA purchasers</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>
