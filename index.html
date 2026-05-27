@@ -300,17 +300,14 @@
         <div class="g-card">
           <div class="g-period">Fall</div>
           <div class="g-score" id="scoreF">3.1</div>
-          <div class="g-range">Typical range 2&ndash;3</div>
         </div>
         <div class="g-card">
           <div class="g-period">Winter</div>
           <div class="g-score" id="scoreW">3.9</div>
-          <div class="g-range">Typical range 3&ndash;5</div>
         </div>
         <div class="g-card">
           <div class="g-period">Spring</div>
           <div class="g-score" id="scoreS">4.8</div>
-          <div class="g-range">Typical range 4&ndash;6</div>
         </div>
       </div>
 
@@ -698,7 +695,7 @@ let activeAgeUsage = 'all';
 let gAge = 'all';
 
 // Age shifts score baseline (younger = lower benchmarks) and pop multiplier
-const AGE_SCORE_OFFSETS = { all:0, '4yo':+0.4, '3yo':0, toddler:-1.2, infant:-2.1 };
+const AGE_SCORE_OFFSETS = { all:0, '4yo':+0.7, '3yo':-0.4, toddler:-1.4, infant:-2.2 };
 const AGE_MULTIPLIERS   = { all:1, '4yo':0.38, '3yo':0.35, toddler:0.18, infant:0.09 };
 const AGE_LABELS        = { all:'All Ages', '4yo':'4 Year Old', '3yo':'3 Year Old', toddler:'Toddler (18–36mo)', infant:'Infant (0–18mo)' };
 
